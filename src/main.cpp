@@ -16,13 +16,14 @@ int main()
     bool wait = false;
     ImGui::SFML::Init(window);
     view = window.getView();
+    int counter = 0;
     while (window.isOpen())
     {
         sf::Event event;
+
         while (window.waitEvent(event))
         {
             ImGui::SFML::ProcessEvent(event);
-            int counter = 0;
             if (event.type == sf::Event::Closed)
                 window.close();
             if (event.type == sf::Event::Resized)
@@ -31,13 +32,13 @@ int main()
                 view.setCenter(sf::Vector2f(64 * 4 + 150.0f, 64 * 4 + 64));
             }
             // Bad Shit, Do drag and drop
-            if (piece == nullptr && !wait)
+            if (piece == nullptr && counter > 5)
             {
                 piece = board.SelectPiece(event, window);
-                counter++;
+                if (piece)
+                    counter = 0;
             }
-            wait = false;
-            if (piece != nullptr && counter == 0)
+            else if (piece != nullptr && counter == 0)
             {
                 if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Button::Left)
                 {
@@ -47,22 +48,30 @@ int main()
                     row = (mousePos.y - Board::GetOffset().y) / Board::GetOffset().y;
                     column = (mousePos.x - Board::GetOffset().x) / Board::GetTileSize().x;
                     row = 7 - row;
-                    std::cout << "Here";
-                    std::cout << row << ", " << column << std::endl;
-                    piece->SetPosition(row, column);
-                    auto newPos = piece->GetPosition();
-                    board.UpdateTile(oldPos, newPos);
-                    piece = nullptr;
-                    wait = true;
+                    std::cout << "Old index: " << oldPos.x * 8 + oldPos.y << std::endl;
+                    std::cout << "Gient If: " << row << ", " << column << std::endl;
+                    int index = row * 8 + column;
+                    std::cout << "Index: " << index << std::endl;
+                    if (index > -1 && index < 64)
+                    {
+                        piece->SetPosition(row, column);
+                        auto newPos = piece->GetPosition();
+                        board.UpdateTile(oldPos, newPos);
+                        piece = nullptr;
+                        std::cout << "Not selectedf any moreeee\n";
+                    }
                 }
             }
-            if (counter == 0)
-                if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Button::Left ||
-                    event.mouseButton.button == sf::Mouse::Button::Right)
-                {
-                    std::cout << "not selected anymore\n";
-                    piece = nullptr;
-                }
+            else if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Button::Left ||
+                     event.mouseButton.button == sf::Mouse::Button::Right)
+            {
+                std::cout << "not selected anymore\n";
+                piece = nullptr;
+            }
+            else
+            {
+                counter++;
+            }
             {
                 ImGui::SFML::Update(window, clock.restart());
             }

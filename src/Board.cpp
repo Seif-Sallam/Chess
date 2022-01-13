@@ -25,21 +25,16 @@ Piece *Board::SelectPiece(sf::Event event, sf::RenderWindow &window)
 {
 	sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
 	sf::FloatRect boardRect = {m_Offset.x, m_Offset.y, m_TileSize.x * 8.0f, m_TileSize.y * 8.0f};
-	sf::FloatRect mouseRect = {mousePos.x, mousePos.y, 2.0f, 2.0f};
+	sf::FloatRect mouseRect = {mousePos.x, mousePos.y, 1.0f, 1.0f};
 	if (boardRect.intersects(mouseRect) && sf::Mouse::isButtonPressed(sf::Mouse::Left))
 	{
 		std::cout << "Selected\n";
 		int row = 0, column = 0;
-		row = (mousePos.y - m_Offset.y) / m_TileSize.y;
+		row = ((mousePos.y - m_Offset.y) - 15.0f) / m_TileSize.y;
 		column = (mousePos.x - m_Offset.x) / m_TileSize.x;
-		std::cout << "row: " << row << std::endl;
 		int index = ((7 - row)) * 8 + column;
-		std::cout << "index: " << index << std::endl;
 		if (row >= 0 && column >= 0 && row < 8 && column < 8)
-		{
-			int index = row * 8 + column;
 			return m_Pieces[index];
-		}
 		else
 			return nullptr;
 	}
@@ -83,17 +78,17 @@ void Board::Draw(sf::RenderWindow &window, sf::Shader *tilesShader)
 
 	//Drawing the pieces
 
-	// for (int file = 0; file < 8; file++)
-	// {
-	// 	for (int rank = 0; rank < 8; rank++)
-	// 	{
-	// 		int index = file * 8 + rank;
-	// 		if (m_Pieces[index] != nullptr)
-	// 		{
-	// 			m_Pieces[index]->Draw(window, nullptr);
-	// 		}
-	// 	}
-	// }
+	for (int file = 0; file < 8; file++)
+	{
+		for (int rank = 0; rank < 8; rank++)
+		{
+			int index = file * 8 + rank;
+			if (m_Pieces[index] != nullptr)
+			{
+				m_Pieces[index]->Draw(window, nullptr);
+			}
+		}
+	}
 	for (int file = 0; file < 8; file++)
 	{
 		// std::cout << "Here\n";
