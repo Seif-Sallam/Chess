@@ -55,6 +55,7 @@ private:
 	int m_Row, m_Column;
 	sf::Vector2i m_OldPosition, m_NewPosition;
 	int m_SelectedIndex;
+	bool m_WhiteTurn = true;
 };
 
 std::ostream &operator<<(std::ostream &stream, const sf::Vector2f &v);

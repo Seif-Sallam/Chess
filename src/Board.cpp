@@ -59,17 +59,19 @@ void Board::UpdateSelection(sf::Event &event, sf::RenderWindow &window)
 	{
 		if (event.mouseButton.button == sf::Mouse::Left)
 		{
-			std::cout << "Alive Pieces: " << m_AlivePieces.size() << std::endl;
 			for (int i = 0; i < m_AlivePieces.size(); i++)
 			{
 				if (m_AlivePieces[i]->Contains(mousePos))
 				{
-					isMoving = true;
-					m_SelectedIndex = i;
-					m_OldPosition = m_AlivePieces[i]->GetPosition();
-					GetPossibleMoves(m_AlivePieces[i]);
-					std::cout << "OldPosition: " << m_OldPosition << std::endl;
-					break;
+					bool isWhite = m_AlivePieces[i]->type & PieceType::White;
+					if (isWhite == m_WhiteTurn)
+					{
+						isMoving = true;
+						m_SelectedIndex = i;
+						m_OldPosition = m_AlivePieces[i]->GetPosition();
+						GetPossibleMoves(m_AlivePieces[i]);
+						break;
+					}
 				}
 			}
 		}
@@ -88,9 +90,9 @@ void Board::UpdateSelection(sf::Event &event, sf::RenderWindow &window)
 
 			if (SelectableIndex(m_NewPosition))
 			{
-				std::cout << "New Position: " << m_NewPosition << std::endl;
 				m_AlivePieces[m_SelectedIndex]->SetPosition(m_NewPosition.x, m_NewPosition.y);
 				UpdateTile(m_OldPosition, m_NewPosition);
+				m_WhiteTurn = !m_WhiteTurn;
 			}
 			m_SelectionSquares.clear();
 		}
@@ -107,18 +109,8 @@ void Board::UpdateTile(const sf::Vector2i &oldPos, const sf::Vector2i &newPos)
 
 	int index1 = oldPos.x * 8 + oldPos.y;
 	int index2 = newPos.x * 8 + newPos.y;
-	LOG("Inside Update Tile:\n");
-	LOG("Index1: ");
-	LOG(index1);
-	LOG("\nIndex2: ");
-	LOG(index2);
-	LOG("\n");
 	auto &piece1 = m_Pieces[index1];
 	auto &piece2 = m_Pieces[index2];
-	if (piece1 != nullptr)
-		std::cout << "Piece1: " << piece1->GetName() << std::endl;
-	if (piece2 != nullptr)
-		std::cout << "Piece2: " << piece2->GetName() << std::endl;
 
 	if (piece1 != piece2)
 	{
@@ -129,7 +121,6 @@ void Board::UpdateTile(const sf::Vector2i &oldPos, const sf::Vector2i &newPos)
 				if (m_AlivePieces[i] == piece2)
 				{
 					m_AlivePieces.erase(m_AlivePieces.begin() + i);
-					std::cout << "Erased\n";
 					break;
 				}
 			}
@@ -259,45 +250,14 @@ void Board::CreatePieces(const std::string &places)
 				type = int(PieceType::Pawn);
 				break;
 			}
-			// it is actully White
 			if (pieceChar != places[i])
-			{
 				type = type | int(PieceType::White);
-			}
 			int index = (7 - rank) * 8 + file;
-			// std::cout << index << " ";
 			m_Pieces[index] = new Piece(type, m_PiecesSpriteSheet, 7 - rank, file);
 			m_AlivePieces.push_back(m_Pieces[index]);
-			std::cout << m_Pieces[index]->GetPosition() << " ";
 			file++;
 			continue;
 		}
-		std::cout << std::endl;
-	}
-	std::cout << "\nPIECES\n";
-	for (int i = 0; i < 8; i++)
-	{
-		for (int j = 0; j < 8; j++)
-		{
-			int index = (7 - i) * 8 + j;
-			if (m_Pieces[index])
-			{
-				std::cout << std::setw(3) << index << " ";
-			}
-		}
-		std::cout << "\n";
-	}
-	for (int i = 0; i < 8; i++)
-	{
-		for (int j = 0; j < 8; j++)
-		{
-			int index = i * 8 + j;
-			if (m_Pieces[index])
-			{
-				std::cout << m_Pieces[index]->GetPosition() << " ";
-			}
-		}
-		std::cout << "\n";
 	}
 }
 
