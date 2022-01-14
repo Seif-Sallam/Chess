@@ -16,7 +16,6 @@ public:
 	inline static sf::Vector2f GetOffset() { return m_Offset; }
 	inline static sf::Vector2f GetTileSize() { return m_TileSize; }
 
-	Piece *SelectPiece(sf::Event event, sf::RenderWindow &window);
 	void UpdateSelection(sf::Event &event, sf::RenderWindow &window);
 	void UpdateTile(const sf::Vector2i &oldPos, const sf::Vector2i &newPos);
 	void SetForeColor(const sf::Color &color);
@@ -36,6 +35,9 @@ private:
 	void PossibleMovesQueen(bool isWhite, int index);
 	void PossibleMovesKnight(bool isWhite, int index);
 	void PossibleMovesKing(bool isWhite, int index);
+	void AddCastlingMoves(bool isWhite, int index);
+
+	bool CanCasle(bool isWhite, int index, bool queenSide);
 	bool SameColor(int index1, int index2);
 
 	static sf::Vector2f m_Offset, m_TileSize;
@@ -56,6 +58,16 @@ private:
 	sf::Vector2i m_OldPosition, m_NewPosition;
 	int m_SelectedIndex;
 	bool m_WhiteTurn = true;
+	bool m_BlackCasleQueen;
+	bool m_BlackCasleKing;
+	bool m_WhiteCasleQueen;
+	bool m_WhiteCasleKing;
+
+	const std::pair<sf::Vector2i, sf::Vector2i> m_BlackCastleQueenMove;
+	const std::pair<sf::Vector2i, sf::Vector2i> m_BlackCastleKingMove;
+
+	const std::pair<sf::Vector2i, sf::Vector2i> m_WhiteCastleQueenMove;
+	const std::pair<sf::Vector2i, sf::Vector2i> m_WhiteCastleKingMove;
 };
 
 std::ostream &operator<<(std::ostream &stream, const sf::Vector2f &v);

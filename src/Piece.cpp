@@ -34,6 +34,11 @@ void Piece::SetPosition(int32_t row, int32_t column)
     }
 }
 
+void Piece::SetPosition(sf::Vector2i pos)
+{
+    SetPosition(pos.x, pos.y);
+}
+
 sf::Vector2i Piece::GetPosition()
 {
     return sf::Vector2i(m_Row, m_Column);

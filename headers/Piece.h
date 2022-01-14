@@ -21,7 +21,7 @@ public:
 	Piece(int type, sf::Texture &texture, int32_t row, int32_t column);
 
 	void SetPosition(int32_t row, int32_t column);
-
+	void SetPosition(sf::Vector2i pos);
 	sf::Vector2i GetPosition();
 	bool Contains(const sf::Vector2i &pos);
 	void Draw(sf::RenderWindow &window, sf::Shader *shader);
