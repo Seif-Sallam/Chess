@@ -18,7 +18,7 @@ Piece::Piece(int type, sf::Texture &texture, int32_t row, int32_t column)
     m_Sprite.setTextureRect(rect);
     m_Sprite.setScale(0.31, 0.31);
     m_Sprite.setPosition(column * Board::GetTileSize().x + Board::GetOffset().x,
-                         Board::GetTileSize().y * 7 - row * Board::GetTileSize().y + Board::GetOffset().y);
+                         row * Board::GetTileSize().y + Board::GetOffset().y);
 }
 
 //Update the pieces in the board
@@ -29,7 +29,8 @@ void Piece::SetPosition(int32_t row, int32_t column)
         m_Row = row;
         m_Column = column;
         m_Sprite.setPosition(column * Board::GetTileSize().x + Board::GetOffset().x,
-                             Board::GetTileSize().y * 7 - row * Board::GetTileSize().y + Board::GetOffset().y);
+                             row * Board::GetTileSize().y + Board::GetOffset().y);
+        firstMove = false;
     }
 }
 
@@ -44,4 +45,43 @@ void Piece::Draw(sf::RenderWindow &window, sf::Shader *shader)
         window.draw(m_Sprite, shader);
     else
         window.draw(m_Sprite);
+}
+
+bool Piece::Contains(const sf::Vector2i &pos)
+{
+    return this->m_Sprite.getGlobalBounds().contains(sf::Vector2f(pos));
+}
+
+std::string Piece::GetName()
+{
+    std::string output;
+    if (type & PieceType::White)
+    {
+        output = "White ";
+    }
+    else
+    {
+        output = "Black ";
+    }
+    if (type & PieceType::King)
+    {
+        output += "King";
+    }
+    else if (type & PieceType::Queen)
+    {
+        output += "Queen";
+    }
+    else if (type & PieceType::Bishop)
+    {
+        output += "Bishop";
+    }
+    else if (type & PieceType::Knight)
+    {
+        output += "Knight";
+    }
+    else if (type & PieceType::Pawn)
+    {
+        output += "Pawn";
+    }
+    return output;
 }
