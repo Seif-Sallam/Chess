@@ -9,8 +9,7 @@ int main()
     sf::View view;
     sf::Vector2f tileSize = sf::Vector2f(64.0f, 64.0f);
     sf::RenderWindow window(sf::VideoMode(tileSize.x * 8, tileSize.y * 8), "Chess", sf::Style::Titlebar);
-    Piece *piece = nullptr;
-    Board board(tileSize, sf::Vector2f(0.0f, 0.f), piece);
+    Board board(tileSize);
     sf::Clock clock;
     board.SetBackColor(sf::Color(116, 77, 54));
     board.SetForeColor(sf::Color(174, 145, 125));

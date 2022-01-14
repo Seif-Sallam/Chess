@@ -17,8 +17,8 @@ Piece::Piece(int type, sf::Texture &texture, int32_t row, int32_t column)
     rect.left = power * 214;
     m_Sprite.setTextureRect(rect);
     m_Sprite.setScale(0.31, 0.31);
-    m_Sprite.setPosition(column * Board::GetTileSize().x + Board::GetOffset().x,
-                         row * Board::GetTileSize().y + Board::GetOffset().y);
+    m_Sprite.setPosition(column * Board::GetTileSize().x,
+                         row * Board::GetTileSize().y);
 }
 
 //Update the pieces in the board
@@ -28,8 +28,8 @@ void Piece::SetPosition(int32_t row, int32_t column)
     {
         m_Row = row;
         m_Column = column;
-        m_Sprite.setPosition(column * Board::GetTileSize().x + Board::GetOffset().x,
-                             row * Board::GetTileSize().y + Board::GetOffset().y);
+        m_Sprite.setPosition(column * Board::GetTileSize().x,
+                             row * Board::GetTileSize().y);
         firstMove = false;
     }
 }
@@ -76,4 +76,9 @@ std::string Piece::GetName()
     else if (type & PieceType::Pawn)
         output += "Pawn";
     return output;
+}
+
+int Piece::GetIndex()
+{
+    return m_Row * 8 + m_Column;
 }
