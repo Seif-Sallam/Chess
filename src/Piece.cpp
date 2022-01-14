@@ -3,7 +3,7 @@
 #include <math.h>
 
 Piece::Piece(int type, sf::Texture &texture, int32_t row, int32_t column)
-    : type(type), m_Row(row), m_Column(column)
+    : type(type), m_Row(row), m_Column(column), firstMove(true)
 {
     m_Sprite.setTexture(texture);
     sf::IntRect rect = {0, 0, 214, 214};
