@@ -56,32 +56,19 @@ std::string Piece::GetName()
 {
     std::string output;
     if (type & PieceType::White)
-    {
         output = "White ";
-    }
     else
-    {
         output = "Black ";
-    }
+
     if (type & PieceType::King)
-    {
         output += "King";
-    }
     else if (type & PieceType::Queen)
-    {
         output += "Queen";
-    }
     else if (type & PieceType::Bishop)
-    {
         output += "Bishop";
-    }
     else if (type & PieceType::Knight)
-    {
         output += "Knight";
-    }
     else if (type & PieceType::Pawn)
-    {
         output += "Pawn";
-    }
     return output;
 }

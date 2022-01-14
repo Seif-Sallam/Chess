@@ -21,6 +21,7 @@ Board::Board(sf::Vector2f tileSize, sf::Vector2f offset, Piece *&currentPiece)
 	}
 
 	std::string piecePlacement = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
+	// std::string piecePlacement = "RRRRRRR/8/8/8/8/8/8/8";
 	CreatePieces(piecePlacement);
 	std::cout << "\n";
 	m_Font.loadFromFile("rsc/Roboto.ttf");
@@ -78,7 +79,6 @@ void Board::UpdateSelection(sf::Event &event, sf::RenderWindow &window)
 		if (event.mouseButton.button == sf::Mouse::Left && isMoving == true)
 		{
 			isMoving = false;
-			m_SelectionSquares.clear();
 			sf::Vector2i position = m_AlivePieces[m_SelectedIndex]->GetPosition();
 			//row, column
 			m_NewPosition = sf::Vector2i(mousePos.y / m_TileSize.y, mousePos.x / m_TileSize.x);
@@ -86,13 +86,13 @@ void Board::UpdateSelection(sf::Event &event, sf::RenderWindow &window)
 			bool flag = false;
 			//Fix this
 
-			if (ValidPosition(m_NewPosition) && ValidPosition(m_OldPosition))
+			if (SelectableIndex(m_NewPosition))
 			{
-
 				std::cout << "New Position: " << m_NewPosition << std::endl;
 				m_AlivePieces[m_SelectedIndex]->SetPosition(m_NewPosition.x, m_NewPosition.y);
 				UpdateTile(m_OldPosition, m_NewPosition);
 			}
+			m_SelectionSquares.clear();
 		}
 	}
 }
@@ -308,134 +308,378 @@ void Board::GetPossibleMoves(Piece *piece)
 	pos.x = pos.x;
 	int index = pos.x * 8 + pos.y;
 	bool isWhite = type & PieceType::White;
+	if (type & PieceType::Pawn)
+		PossibleMovesPawn(isWhite, index);
+
+	if (type & PieceType::Rook)
+	{
+		PossibleMovesRook(isWhite, index);
+	}
+	else if (type & PieceType::Bishop)
+	{
+		PossibleMovesBishop(isWhite, index);
+	}
+	else if (type & PieceType::Queen)
+	{
+		PossibleMovesQueen(isWhite, index);
+	}
+	else if (type & PieceType::Knight)
+	{
+		PossibleMovesKnight(isWhite, index);
+	}
+	else if (type & PieceType::King)
+	{
+		PossibleMovesKing(isWhite, index);
+	}
+}
+
+bool Board::SelectableIndex(sf::Vector2i position)
+{
+	int index = position.x * 8 + position.y;
+	if (std::find(m_SelectionSquares.begin(), m_SelectionSquares.end(), index) != m_SelectionSquares.end())
+		return true;
+
+	return false;
+}
+
+void Board::PossibleMovesPawn(bool isWhite, int index)
+{
+	Piece *piece = m_Pieces[index];
 	if (isWhite) // it is a whtie piece
 	{
-		if (type & PieceType::Pawn)
+		sf::Vector2i pos = piece->GetPosition();
+
+		int index2 = (pos.x - 1) * 8 + pos.y;
+		bool added = false;
+		if (ValidPosition(sf::Vector2i((pos.x - 1), pos.y)))
+			if (m_Pieces[index2] == nullptr)
+			{
+				m_SelectionSquares.push_back(index2);
+				added = true;
+			}
+		index2 = (pos.x - 2) * 8 + pos.y;
+		if (ValidPosition(sf::Vector2i((pos.x - 2), pos.y)))
+			if (piece->firstMove && added)
+				if (m_Pieces[index2] == nullptr)
+					m_SelectionSquares.push_back(index2);
+
+		//Captures
 		{
-			m_SelectionSquares.push_back(index - 8);
-			if (piece->firstMove)
-				m_SelectionSquares.push_back(index - 16);
+			sf::Vector2i pos2 = piece->GetPosition();
+			pos2.x -= 1;
+			pos2.y -= 1;
+			int index3 = pos2.x * 8 + pos2.y;
+			if (ValidPosition(pos2))
+				if (m_Pieces[index3])
+					if (!SameColor(index3, index))
+					{
+						m_SelectionSquares.push_back(index3);
+					}
+		}
+		{
+			sf::Vector2i pos2 = piece->GetPosition();
+			pos2.x -= 1;
+			pos2.y += 1;
+			int index3 = pos2.x * 8 + pos2.y;
+			if (ValidPosition(pos2))
+				if (m_Pieces[index3])
+					if (!SameColor(index3, index))
+					{
+						m_SelectionSquares.push_back(index3);
+					}
 		}
 	}
 	else
 	{
-		if (type & PieceType::Pawn)
+		sf::Vector2i pos = piece->GetPosition();
+
+		int index2 = (pos.x + 1) * 8 + pos.y;
+		bool added = false;
+		if (ValidPosition(sf::Vector2i((pos.x + 1), pos.y)))
+			if (m_Pieces[index2] == nullptr)
+			{
+				m_SelectionSquares.push_back(index2);
+				added = true;
+			}
+		index2 = (pos.x + 2) * 8 + pos.y;
+		if (ValidPosition(sf::Vector2i((pos.x + 2), pos.y)))
+			if (piece->firstMove && added)
+				if (m_Pieces[index2] == nullptr)
+					m_SelectionSquares.push_back(index2);
+
+		//Captures
 		{
-			m_SelectionSquares.push_back(index + 8);
-			if (piece->firstMove)
-				m_SelectionSquares.push_back(index + 16);
+			sf::Vector2i pos2 = piece->GetPosition();
+			pos2.x += 1;
+			pos2.y -= 1;
+			int index3 = pos2.x * 8 + pos2.y;
+			if (ValidPosition(pos2))
+				if (m_Pieces[index3])
+					if (!SameColor(index3, index))
+					{
+						m_SelectionSquares.push_back(index3);
+					}
+		}
+		{
+			sf::Vector2i pos2 = piece->GetPosition();
+			pos2.x += 1;
+			pos2.y += 1;
+			int index3 = pos2.x * 8 + pos2.y;
+			if (ValidPosition(pos2))
+				if (m_Pieces[index3])
+					if (!SameColor(index3, index))
+					{
+						m_SelectionSquares.push_back(index3);
+					}
 		}
 	}
-	if (type & PieceType::Rook)
+}
+
+void Board::PossibleMovesRook(bool isWhite, int index)
+{
+	sf::Vector2i pos = m_Pieces[index]->GetPosition();
+
+	int counterblockedY = 0;
+	for (int i = pos.x - 1; i > -1; i--)
 	{
-		sf::Vector2i newPos = pos;
-		newPos.x = 0;
-		for (int i = 0; i < 8; i++)
+		int index2 = i * 8 + pos.y;
+		if (index2 != index)
 		{
-			int index2 = i * 8 + newPos.y;
-			if (index2 != index)
+			if (m_Pieces[index2] == nullptr)
 				m_SelectionSquares.push_back(index2);
-			index2 = pos.x * 8 + i;
-			if (index2 != index)
-				m_SelectionSquares.push_back(index2);
+			else
+			{
+				if (!SameColor(index2, index))
+					m_SelectionSquares.push_back(index2);
+				break;
+			}
 		}
 	}
-	if (type & PieceType::Bishop)
+	for (int i = pos.x + 1; i < 8; i++)
 	{
-		for (int i = pos.x, j = pos.y; i < 8 && j < 8; i++, j++)
+		int index2 = i * 8 + pos.y;
+		if (index2 != index)
 		{
-			int index2 = i * 8 + j;
-			if (index2 != index)
+			if (m_Pieces[index2] == nullptr)
 				m_SelectionSquares.push_back(index2);
-		}
-		for (int i = pos.x, j = pos.y; i >= 0 && j >= 0; i--, j--)
-		{
-			int index2 = i * 8 + j;
-			if (index2 != index)
-				m_SelectionSquares.push_back(index2);
-		}
-		for (int i = pos.x, j = pos.y; i < 8 && j >= 0; i++, j--)
-		{
-			int index2 = i * 8 + j;
-			if (index2 != index)
-				m_SelectionSquares.push_back(index2);
-		}
-		for (int i = pos.x, j = pos.y; i >= 0 && j < 8; i--, j++)
-		{
-			int index2 = i * 8 + j;
-			if (index2 != index)
-				m_SelectionSquares.push_back(index2);
+			else
+			{
+				if (!SameColor(index2, index))
+					m_SelectionSquares.push_back(index2);
+				break;
+			}
 		}
 	}
-	if (type & PieceType::Queen)
+	for (int i = pos.y - 1; i > -1; i--)
 	{
-		for (int i = 0; i < 8; i++)
+		int index2 = pos.x * 8 + i;
+		if (index2 != index)
 		{
-			int index2 = i * 8 + pos.y;
-			if (index2 != index)
+			if (m_Pieces[index2] == nullptr)
 				m_SelectionSquares.push_back(index2);
-			index2 = pos.x * 8 + i;
-			if (index2 != index)
-				m_SelectionSquares.push_back(index2);
-		}
-		for (int i = pos.x, j = pos.y; i < 8 && j < 8; i++, j++)
-		{
-			int index2 = i * 8 + j;
-			if (index2 != index)
-				m_SelectionSquares.push_back(index2);
-		}
-		for (int i = pos.x, j = pos.y; i >= 0 && j >= 0; i--, j--)
-		{
-			int index2 = i * 8 + j;
-			if (index2 != index)
-				m_SelectionSquares.push_back(index2);
-		}
-		for (int i = pos.x, j = pos.y; i < 8 && j >= 0; i++, j--)
-		{
-			int index2 = i * 8 + j;
-			if (index2 != index)
-				m_SelectionSquares.push_back(index2);
-		}
-		for (int i = pos.x, j = pos.y; i >= 0 && j < 8; i--, j++)
-		{
-			int index2 = i * 8 + j;
-			if (index2 != index)
-				m_SelectionSquares.push_back(index2);
+			else
+			{
+				if (!SameColor(index2, index))
+					m_SelectionSquares.push_back(index2);
+				break;
+			}
 		}
 	}
-	if (type & PieceType::Knight)
+	for (int i = pos.y + 1; i < 8; i++)
 	{
-		int index1 = (pos.x - 2) * 8 + pos.y + 1;
-		if (ValidPosition(sf::Vector2i(pos.x - 2, pos.y + 1)))
+		int index2 = pos.x * 8 + i;
+		if (index2 != index)
+		{
+			if (m_Pieces[index2] == nullptr)
+				m_SelectionSquares.push_back(index2);
+			else
+			{
+				if (!SameColor(index2, index))
+					m_SelectionSquares.push_back(index2);
+				break;
+			}
+		}
+	}
+}
+
+void Board::PossibleMovesBishop(bool isWhite, int index)
+{
+	sf::Vector2i pos = m_Pieces[index]->GetPosition();
+
+	for (int i = pos.x, j = pos.y; i < 8 && j < 8; i++, j++)
+	{
+		int index2 = i * 8 + j;
+		if (index2 != index)
+		{
+			if (m_Pieces[index2] == nullptr)
+				m_SelectionSquares.push_back(index2);
+			else
+			{
+				if (!SameColor(index2, index))
+					m_SelectionSquares.push_back(index2);
+				break;
+			}
+		}
+	}
+
+	for (int i = pos.x, j = pos.y; i >= 0 && j >= 0; i--, j--)
+	{
+		int index2 = i * 8 + j;
+		if (index2 != index)
+		{
+			if (m_Pieces[index2] == nullptr)
+				m_SelectionSquares.push_back(index2);
+			else
+			{
+				if (!SameColor(index2, index))
+					m_SelectionSquares.push_back(index2);
+				break;
+			}
+		}
+	}
+
+	for (int i = pos.x, j = pos.y; i < 8 && j >= 0; i++, j--)
+	{
+		int index2 = i * 8 + j;
+		if (index2 != index)
+		{
+			if (m_Pieces[index2] == nullptr)
+				m_SelectionSquares.push_back(index2);
+			else
+			{
+				if (!SameColor(index2, index))
+					m_SelectionSquares.push_back(index2);
+				break;
+			}
+		}
+	}
+
+	for (int i = pos.x, j = pos.y; i >= 0 && j < 8; i--, j++)
+	{
+		int index2 = i * 8 + j;
+		if (index2 != index)
+		{
+			if (m_Pieces[index2] == nullptr)
+				m_SelectionSquares.push_back(index2);
+			else
+			{
+				if (!SameColor(index2, index))
+					m_SelectionSquares.push_back(index2);
+				break;
+			}
+		}
+	}
+}
+
+void Board::PossibleMovesQueen(bool isWhite, int index)
+{
+	PossibleMovesRook(isWhite, index);
+	PossibleMovesBishop(isWhite, index);
+}
+
+void Board::PossibleMovesKnight(bool isWhite, int index)
+{
+	sf::Vector2i pos = m_Pieces[index]->GetPosition();
+	int index1 = (pos.x - 2) * 8 + pos.y + 1;
+	if (ValidPosition(sf::Vector2i(pos.x - 2, pos.y + 1)))
+	{
+		if (m_Pieces[index1] == nullptr || !SameColor(index1, index))
+			m_SelectionSquares.push_back(index1);
+	}
+
+	index1 = (pos.x - 1) * 8 + pos.y + 2;
+	if (ValidPosition(sf::Vector2i(pos.x - 1, pos.y + 2)))
+		if (m_Pieces[index1] == nullptr || !SameColor(index1, index))
 			m_SelectionSquares.push_back(index1);
 
-		index1 = (pos.x - 1) * 8 + pos.y + 2;
-		if (ValidPosition(sf::Vector2i(pos.x - 1, pos.y + 2)))
+	index1 = (pos.x - 2) * 8 + pos.y - 1;
+	if (ValidPosition(sf::Vector2i(pos.x - 2, pos.y - 1)))
+		if (m_Pieces[index1] == nullptr || !SameColor(index1, index))
 			m_SelectionSquares.push_back(index1);
 
-		index1 = (pos.x - 2) * 8 + pos.y - 1;
-		if (ValidPosition(sf::Vector2i(pos.x - 2, pos.y - 1)))
+	index1 = (pos.x - 1) * 8 + pos.y - 2;
+	if (ValidPosition(sf::Vector2i(pos.x - 1, pos.y - 2)))
+		if (m_Pieces[index1] == nullptr || !SameColor(index1, index))
 			m_SelectionSquares.push_back(index1);
 
-		index1 = (pos.x - 1) * 8 + pos.y - 2;
-		if (ValidPosition(sf::Vector2i(pos.x - 1, pos.y - 2)))
+	index1 = (pos.x + 2) * 8 + pos.y + 1;
+	if (ValidPosition(sf::Vector2i(pos.x + 2, pos.y + 1)))
+		if (m_Pieces[index1] == nullptr || !SameColor(index1, index))
 			m_SelectionSquares.push_back(index1);
 
-		index1 = (pos.x + 2) * 8 + pos.y + 1;
-		if (ValidPosition(sf::Vector2i(pos.x + 2, pos.y + 1)))
+	index1 = (pos.x + 1) * 8 + pos.y + 2;
+	if (ValidPosition(sf::Vector2i(pos.x + 1, pos.y + 2)))
+		if (m_Pieces[index1] == nullptr || !SameColor(index1, index))
 			m_SelectionSquares.push_back(index1);
 
-		index1 = (pos.x + 1) * 8 + pos.y + 2;
-		if (ValidPosition(sf::Vector2i(pos.x + 1, pos.y + 2)))
+	index1 = (pos.x + 2) * 8 + pos.y - 1;
+	if (ValidPosition(sf::Vector2i(pos.x + 2, pos.y - 1)))
+		if (m_Pieces[index1] == nullptr || !SameColor(index1, index))
 			m_SelectionSquares.push_back(index1);
 
-		index1 = (pos.x + 2) * 8 + pos.y - 1;
-		if (ValidPosition(sf::Vector2i(pos.x + 2, pos.y - 1)))
+	index1 = (pos.x + 1) * 8 + pos.y - 2;
+	if (ValidPosition(sf::Vector2i(pos.x + 1, pos.y - 2)))
+		if (m_Pieces[index1] == nullptr || !SameColor(index1, index))
 			m_SelectionSquares.push_back(index1);
+}
 
-		index1 = (pos.x + 1) * 8 + pos.y - 2;
-		if (ValidPosition(sf::Vector2i(pos.x + 1, pos.y - 2)))
-			m_SelectionSquares.push_back(index1);
+void Board::PossibleMovesKing(bool isWhite, int index2)
+{
+	auto GetIndex = [](sf::Vector2i v)
+	{ return v.x * 8 + v.y; };
+	sf::Vector2i pos = m_Pieces[index2]->GetPosition();
+	if (ValidPosition(sf::Vector2i(pos.x - 1, pos.y - 1)))
+	{
+		int index = GetIndex(sf::Vector2i(pos.x - 1, pos.y - 1));
+		if (m_Pieces[index] == nullptr || !SameColor(index, index2))
+			m_SelectionSquares.push_back(index);
+	}
+
+	if (ValidPosition(sf::Vector2i(pos.x + 1, pos.y + 1)))
+	{
+		int index = GetIndex(sf::Vector2i(pos.x + 1, pos.y + 1));
+		if (m_Pieces[index] == nullptr || !SameColor(index, index2))
+			m_SelectionSquares.push_back(index);
+	}
+
+	if (ValidPosition(sf::Vector2i(pos.x - 1, pos.y + 1)))
+	{
+		int index = GetIndex(sf::Vector2i(pos.x - 1, pos.y + 1));
+		if (m_Pieces[index] == nullptr || !SameColor(index, index2))
+			m_SelectionSquares.push_back(index);
+	}
+
+	if (ValidPosition(sf::Vector2i(pos.x + 1, pos.y - 1)))
+	{
+		int index = GetIndex(sf::Vector2i(pos.x + 1, pos.y - 1));
+		if (m_Pieces[index] == nullptr || !SameColor(index, index2))
+			m_SelectionSquares.push_back(index);
+	}
+
+	if (ValidPosition(sf::Vector2i(pos.x + 1, pos.y)))
+	{
+		int index = GetIndex(sf::Vector2i(pos.x + 1, pos.y));
+		if (m_Pieces[index] == nullptr || !SameColor(index, index2))
+			m_SelectionSquares.push_back(index);
+	}
+	if (ValidPosition(sf::Vector2i(pos.x - 1, pos.y)))
+	{
+		int index = GetIndex(sf::Vector2i(pos.x - 1, pos.y));
+		if (m_Pieces[index] == nullptr || !SameColor(index, index2))
+			m_SelectionSquares.push_back(index);
+	}
+
+	if (ValidPosition(sf::Vector2i(pos.x, pos.y + 1)))
+	{
+		int index = GetIndex(sf::Vector2i(pos.x, pos.y + 1));
+		if (m_Pieces[index] == nullptr || !SameColor(index, index2))
+			m_SelectionSquares.push_back(index);
+	}
+	if (ValidPosition(sf::Vector2i(pos.x, pos.y - 1)))
+	{
+		int index = GetIndex(sf::Vector2i(pos.x, pos.y - 1));
+		if (m_Pieces[index] == nullptr || !SameColor(index, index2))
+			m_SelectionSquares.push_back(index);
 	}
 }
 
@@ -449,4 +693,16 @@ std::ostream &operator<<(std::ostream &stream, const sf::Vector2i &v)
 {
 	stream << "(" << v.x << ", " << v.y << ")";
 	return stream;
+}
+
+bool Board::SameColor(int index1, int index2)
+{
+	if (m_Pieces[index1] && m_Pieces[index2])
+	{
+		return (((m_Pieces[index1]->type ^ m_Pieces[index2]->type) & PieceType::White) == 0);
+	}
+	else
+	{
+		return false;
+	}
 }

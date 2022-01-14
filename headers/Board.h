@@ -25,9 +25,19 @@ public:
 	void Draw(sf::RenderWindow &window, sf::Shader *shader);
 
 private:
+	bool SelectableIndex(sf::Vector2i position);
 	void CreatePieces(const std::string &places);
 	void GetPossibleMoves(Piece *piece);
 	bool ValidPosition(const sf::Vector2i &position);
+
+	void PossibleMovesRook(bool isWhite, int index);
+	void PossibleMovesPawn(bool isWhite, int index);
+	void PossibleMovesBishop(bool isWhite, int index);
+	void PossibleMovesQueen(bool isWhite, int index);
+	void PossibleMovesKnight(bool isWhite, int index);
+	void PossibleMovesKing(bool isWhite, int index);
+	bool SameColor(int index1, int index2);
+
 	static sf::Vector2f m_Offset, m_TileSize;
 	Piece *&m_CurrentPiece;
 	bool generated = false;
