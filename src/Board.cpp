@@ -66,16 +66,23 @@ void Board::UpdateSelection(sf::Event &event, sf::RenderWindow &window)
 				Piece *&piece = m_AlivePieces[m_SelectedIndex];
 				int type = piece->type;
 				bool isWhite = type & PieceType::White;
-				bool castlingMove = IsCastlingMove(isWhite);
 
+				bool castlingMove = false;
+				if (type & PieceType::King)
+					castlingMove = IsCastlingMove(isWhite);
+				bool flag = false;
 				if (castlingMove)
 				{
 					if (isWhite)
-						MoveCastlingWhite();
+					{
+						flag = MoveCastlingWhite();
+					}
 					else
-						MoveCastlingBlack();
+					{
+						flag = MoveCastlingBlack();
+					}
 				}
-				else
+				if (flag == false)
 					MoveNormally();
 				m_WhiteTurn = !m_WhiteTurn;
 			}
@@ -793,7 +800,11 @@ bool Board::CanCasle(bool isWhite, bool queenSide)
 					break;
 				}
 			}
-			return !pieceExists && m_WhiteCasleQueen;
+
+			sf::Vector2i rookPosition = sf::Vector2i(7, 0);
+			Piece *rook = m_Pieces[rookPosition.x * 8 + rookPosition.y];
+
+			return !pieceExists && m_WhiteCasleQueen && rook && rook->firstMove;
 		}
 		else
 		{
@@ -806,7 +817,10 @@ bool Board::CanCasle(bool isWhite, bool queenSide)
 					pieceExists = true;
 					break;
 				}
-			return !pieceExists && m_WhiteCasleKing;
+			sf::Vector2i rookPosition = sf::Vector2i(7, 7);
+			Piece *rook = m_Pieces[rookPosition.x * 8 + rookPosition.y];
+
+			return !pieceExists && m_WhiteCasleKing && rook && rook->firstMove;
 		}
 	}
 	else
@@ -826,7 +840,10 @@ bool Board::CanCasle(bool isWhite, bool queenSide)
 					break;
 				}
 			}
-			return !pieceExists && m_BlackCasleQueen;
+			sf::Vector2i rookPosition = sf::Vector2i(0, 7);
+			Piece *rook = m_Pieces[rookPosition.x * 8 + rookPosition.y];
+
+			return !pieceExists && m_BlackCasleQueen && rook && rook->firstMove;
 		}
 		else
 		{
@@ -839,7 +856,10 @@ bool Board::CanCasle(bool isWhite, bool queenSide)
 					pieceExists = true;
 					break;
 				}
-			return !pieceExists && m_BlackCasleKing;
+			sf::Vector2i rookPosition = sf::Vector2i(0, 0);
+			Piece *rook = m_Pieces[rookPosition.x * 8 + rookPosition.y];
+
+			return !pieceExists && m_BlackCasleKing && rook && rook->firstMove;
 		}
 	}
 }
@@ -941,7 +961,7 @@ bool Board::CanPieceAttack(int32_t kingIndex, Piece *currentPiece, std::list<int
 	return flag;
 }
 
-void Board::MoveCastlingWhite()
+bool Board::MoveCastlingWhite()
 {
 	bool castlingQueen = false;
 	bool castlingKing = false;
@@ -957,10 +977,16 @@ void Board::MoveCastlingWhite()
 
 		sf::Vector2i oldRookPos = sf::Vector2i(7, 7);
 		Piece *rightRook = m_Pieces[oldRookPos.x * 8 + oldRookPos.y];
+		if (rightRook == nullptr)
+		{
+			m_WhiteCasleKing = false;
+			return false;
+		}
 		UpdateTile(oldRookPos, m_WhiteCastleKingMove.second);
 		rightRook->SetPosition(m_WhiteCastleKingMove.second);
 		m_WhiteCasleKing = false;
 		m_WhiteCasleQueen = false;
+		return true;
 	}
 	else if (castlingQueen)
 	{
@@ -969,14 +995,21 @@ void Board::MoveCastlingWhite()
 		UpdateTile(m_OldPosition, m_WhiteCastleQueenMove.first);
 		sf::Vector2i oldRookPos = sf::Vector2i(7, 0);
 		Piece *leftRook = m_Pieces[oldRookPos.x * 8 + oldRookPos.y];
+		if (leftRook == nullptr)
+		{
+			m_WhiteCasleQueen = false;
+			return false;
+		}
 		UpdateTile(oldRookPos, m_WhiteCastleQueenMove.second);
 		leftRook->SetPosition(m_WhiteCastleQueenMove.second);
 		m_WhiteCasleKing = false;
 		m_WhiteCasleQueen = false;
+		return true;
 	}
+	return false;
 }
 
-void Board::MoveCastlingBlack()
+bool Board::MoveCastlingBlack()
 {
 	bool castlingQueen = false;
 	bool castlingKing = false;
@@ -988,10 +1021,16 @@ void Board::MoveCastlingBlack()
 		UpdateTile(m_OldPosition, m_BlackCastleKingMove.first);
 		sf::Vector2i oldRookPos = sf::Vector2i(0, 7);
 		Piece *rightRook = m_Pieces[oldRookPos.x * 8 + oldRookPos.y];
+		if (rightRook == nullptr)
+		{
+			m_BlackCasleKing = false;
+			return false;
+		}
 		UpdateTile(oldRookPos, m_BlackCastleKingMove.second);
 		rightRook->SetPosition(m_BlackCastleKingMove.second);
 		m_BlackCasleKing = false;
 		m_BlackCasleQueen = false;
+		return true;
 	}
 	else if (castlingQueen)
 	{
@@ -999,11 +1038,18 @@ void Board::MoveCastlingBlack()
 		UpdateTile(m_OldPosition, m_BlackCastleQueenMove.first);
 		sf::Vector2i oldRookPos = sf::Vector2i(0, 0);
 		Piece *leftRook = m_Pieces[oldRookPos.x * 8 + oldRookPos.y];
+		if (leftRook == nullptr)
+		{
+			m_BlackCasleKing = false;
+			return false;
+		}
 		UpdateTile(oldRookPos, m_BlackCastleQueenMove.second);
 		leftRook->SetPosition(m_BlackCastleQueenMove.second);
 		m_BlackCasleKing = false;
 		m_BlackCasleQueen = false;
+		return true;
 	}
+	return false;
 }
 
 void Board::MoveNormally()
@@ -1017,9 +1063,11 @@ bool Board::IsCastlingMove(bool isWhite)
 	bool castlingMove = (!isWhite && (m_BlackCasleQueen && (m_NewPosition.x == m_BlackCastleQueenMove.first.x && m_NewPosition.y == m_BlackCastleQueenMove.first.y)) ||
 						 (m_BlackCasleKing && (m_NewPosition.x == m_BlackCastleKingMove.first.x && m_NewPosition.y == m_BlackCastleKingMove.first.y))) &&
 						m_BlackKing->firstMove;
+
 	castlingMove = castlingMove || (isWhite && (m_WhiteCasleQueen && (m_NewPosition.x == m_WhiteCastleQueenMove.first.x && m_NewPosition.y == m_WhiteCastleQueenMove.first.y) ||
 												(m_WhiteCasleKing && (m_NewPosition.x == m_WhiteCastleKingMove.first.x && m_NewPosition.y == m_WhiteCastleKingMove.first.y)))) &&
 									   m_WhiteKing->firstMove;
+
 	return castlingMove;
 }
 

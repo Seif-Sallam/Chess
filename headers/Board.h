@@ -23,8 +23,8 @@ public:
 	void Draw(sf::RenderWindow &window, sf::Shader *shader);
 
 private:
-	void MoveCastlingWhite();
-	void MoveCastlingBlack();
+	bool MoveCastlingWhite();
+	bool MoveCastlingBlack();
 	void MoveNormally();
 
 	bool IsCastlingMove(bool isWhite);
