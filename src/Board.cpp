@@ -22,7 +22,6 @@ Board::Board(sf::Vector2f tileSize)
 	}
 
 	std::string piecePlacement = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
-	// std::string piecePlacement = "RRRRRRR/8/8/8/8/8/8/8";
 	CreatePieces(piecePlacement);
 	m_Font.loadFromFile("rsc/Roboto.ttf");
 	m_Text.setCharacterSize(13);
@@ -249,9 +248,13 @@ void Board::CreatePieces(const std::string &places)
 			if (type & PieceType::King)
 			{
 				if (type & PieceType::White)
+				{
 					m_WhiteKing = m_Pieces[index];
+				}
 				else
+				{
 					m_BlackKing = m_Pieces[index];
+				}
 			}
 
 			m_AlivePieces.push_back(m_Pieces[index]);
@@ -291,8 +294,11 @@ bool Board::SelectableIndex(sf::Vector2i position)
 	return false;
 }
 
-void Board::PossibleMovesPawn(bool isWhite, int index, bool capturesOnly)
+void Board::PossibleMovesPawn(bool isWhite, int index, bool capturesOnly, std::list<int32_t> *list)
 {
+	if (list == nullptr)
+		list = &m_SelectionSquares;
+
 	Piece *piece = m_Pieces[index];
 	if (isWhite) // it is a whtie piece
 	{
@@ -304,14 +310,16 @@ void Board::PossibleMovesPawn(bool isWhite, int index, bool capturesOnly)
 			if (ValidPosition(sf::Vector2i((pos.x - 1), pos.y)))
 				if (m_Pieces[index2] == nullptr)
 				{
-					m_SelectionSquares.push_back(index2);
+					list->push_back(index2);
 					added = true;
 				}
 			index2 = (pos.x - 2) * 8 + pos.y;
 			if (ValidPosition(sf::Vector2i((pos.x - 2), pos.y)))
 				if (piece->firstMove && added)
 					if (m_Pieces[index2] == nullptr)
-						m_SelectionSquares.push_back(index2);
+					{
+						list->push_back(index2);
+					}
 		}
 		//Captures
 		{
@@ -323,7 +331,7 @@ void Board::PossibleMovesPawn(bool isWhite, int index, bool capturesOnly)
 				if (m_Pieces[index3])
 					if (!SameColor(index3, index))
 					{
-						m_SelectionSquares.push_back(index3);
+						list->push_back(index3);
 					}
 		}
 		{
@@ -335,7 +343,7 @@ void Board::PossibleMovesPawn(bool isWhite, int index, bool capturesOnly)
 				if (m_Pieces[index3])
 					if (!SameColor(index3, index))
 					{
-						m_SelectionSquares.push_back(index3);
+						list->push_back(index3);
 					}
 		}
 	}
@@ -349,14 +357,14 @@ void Board::PossibleMovesPawn(bool isWhite, int index, bool capturesOnly)
 			if (ValidPosition(sf::Vector2i((pos.x + 1), pos.y)))
 				if (m_Pieces[index2] == nullptr)
 				{
-					m_SelectionSquares.push_back(index2);
+					list->push_back(index2);
 					added = true;
 				}
 			index2 = (pos.x + 2) * 8 + pos.y;
 			if (ValidPosition(sf::Vector2i((pos.x + 2), pos.y)))
 				if (piece->firstMove && added)
 					if (m_Pieces[index2] == nullptr)
-						m_SelectionSquares.push_back(index2);
+						list->push_back(index2);
 		}
 		//Captures
 		{
@@ -368,7 +376,7 @@ void Board::PossibleMovesPawn(bool isWhite, int index, bool capturesOnly)
 				if (m_Pieces[index3])
 					if (!SameColor(index3, index))
 					{
-						m_SelectionSquares.push_back(index3);
+						list->push_back(index3);
 					}
 		}
 		{
@@ -380,14 +388,17 @@ void Board::PossibleMovesPawn(bool isWhite, int index, bool capturesOnly)
 				if (m_Pieces[index3])
 					if (!SameColor(index3, index))
 					{
-						m_SelectionSquares.push_back(index3);
+						list->push_back(index3);
 					}
 		}
 	}
 }
 
-void Board::PossibleMovesRook(bool isWhite, int index)
+void Board::PossibleMovesRook(bool isWhite, int index, std::list<int32_t> *list)
 {
+	if (list == nullptr)
+		list = &m_SelectionSquares;
+
 	sf::Vector2i pos = m_Pieces[index]->GetPosition();
 
 	int counterblockedY = 0;
@@ -397,11 +408,11 @@ void Board::PossibleMovesRook(bool isWhite, int index)
 		if (index2 != index)
 		{
 			if (m_Pieces[index2] == nullptr)
-				m_SelectionSquares.push_back(index2);
+				list->push_back(index2);
 			else
 			{
 				if (!SameColor(index2, index))
-					m_SelectionSquares.push_back(index2);
+					list->push_back(index2);
 				break;
 			}
 		}
@@ -412,11 +423,11 @@ void Board::PossibleMovesRook(bool isWhite, int index)
 		if (index2 != index)
 		{
 			if (m_Pieces[index2] == nullptr)
-				m_SelectionSquares.push_back(index2);
+				list->push_back(index2);
 			else
 			{
 				if (!SameColor(index2, index))
-					m_SelectionSquares.push_back(index2);
+					list->push_back(index2);
 				break;
 			}
 		}
@@ -427,11 +438,11 @@ void Board::PossibleMovesRook(bool isWhite, int index)
 		if (index2 != index)
 		{
 			if (m_Pieces[index2] == nullptr)
-				m_SelectionSquares.push_back(index2);
+				list->push_back(index2);
 			else
 			{
 				if (!SameColor(index2, index))
-					m_SelectionSquares.push_back(index2);
+					list->push_back(index2);
 				break;
 			}
 		}
@@ -442,19 +453,22 @@ void Board::PossibleMovesRook(bool isWhite, int index)
 		if (index2 != index)
 		{
 			if (m_Pieces[index2] == nullptr)
-				m_SelectionSquares.push_back(index2);
+				list->push_back(index2);
 			else
 			{
 				if (!SameColor(index2, index))
-					m_SelectionSquares.push_back(index2);
+					list->push_back(index2);
 				break;
 			}
 		}
 	}
 }
 
-void Board::PossibleMovesBishop(bool isWhite, int index)
+void Board::PossibleMovesBishop(bool isWhite, int index, std::list<int32_t> *list)
 {
+	if (list == nullptr)
+		list = &m_SelectionSquares;
+
 	sf::Vector2i pos = m_Pieces[index]->GetPosition();
 
 	for (int i = pos.x, j = pos.y; i < 8 && j < 8; i++, j++)
@@ -463,11 +477,11 @@ void Board::PossibleMovesBishop(bool isWhite, int index)
 		if (index2 != index)
 		{
 			if (m_Pieces[index2] == nullptr)
-				m_SelectionSquares.push_back(index2);
+				list->push_back(index2);
 			else
 			{
 				if (!SameColor(index2, index))
-					m_SelectionSquares.push_back(index2);
+					list->push_back(index2);
 				break;
 			}
 		}
@@ -479,11 +493,11 @@ void Board::PossibleMovesBishop(bool isWhite, int index)
 		if (index2 != index)
 		{
 			if (m_Pieces[index2] == nullptr)
-				m_SelectionSquares.push_back(index2);
+				list->push_back(index2);
 			else
 			{
 				if (!SameColor(index2, index))
-					m_SelectionSquares.push_back(index2);
+					list->push_back(index2);
 				break;
 			}
 		}
@@ -495,11 +509,11 @@ void Board::PossibleMovesBishop(bool isWhite, int index)
 		if (index2 != index)
 		{
 			if (m_Pieces[index2] == nullptr)
-				m_SelectionSquares.push_back(index2);
+				list->push_back(index2);
 			else
 			{
 				if (!SameColor(index2, index))
-					m_SelectionSquares.push_back(index2);
+					list->push_back(index2);
 				break;
 			}
 		}
@@ -511,71 +525,77 @@ void Board::PossibleMovesBishop(bool isWhite, int index)
 		if (index2 != index)
 		{
 			if (m_Pieces[index2] == nullptr)
-				m_SelectionSquares.push_back(index2);
+				list->push_back(index2);
 			else
 			{
 				if (!SameColor(index2, index))
-					m_SelectionSquares.push_back(index2);
+					list->push_back(index2);
 				break;
 			}
 		}
 	}
 }
 
-void Board::PossibleMovesQueen(bool isWhite, int index)
+void Board::PossibleMovesQueen(bool isWhite, int index, std::list<int32_t> *list)
 {
-	PossibleMovesRook(isWhite, index);
-	PossibleMovesBishop(isWhite, index);
+	PossibleMovesRook(isWhite, index, list);
+	PossibleMovesBishop(isWhite, index, list);
 }
 
-void Board::PossibleMovesKnight(bool isWhite, int index)
+void Board::PossibleMovesKnight(bool isWhite, int index, std::list<int32_t> *list)
 {
+	if (list == nullptr)
+		list = &m_SelectionSquares;
+
 	sf::Vector2i pos = m_Pieces[index]->GetPosition();
 	int index1 = (pos.x - 2) * 8 + pos.y + 1;
 	if (ValidPosition(sf::Vector2i(pos.x - 2, pos.y + 1)))
 	{
 		if (m_Pieces[index1] == nullptr || !SameColor(index1, index))
-			m_SelectionSquares.push_back(index1);
+			list->push_back(index1);
 	}
 
 	index1 = (pos.x - 1) * 8 + pos.y + 2;
 	if (ValidPosition(sf::Vector2i(pos.x - 1, pos.y + 2)))
 		if (m_Pieces[index1] == nullptr || !SameColor(index1, index))
-			m_SelectionSquares.push_back(index1);
+			list->push_back(index1);
 
 	index1 = (pos.x - 2) * 8 + pos.y - 1;
 	if (ValidPosition(sf::Vector2i(pos.x - 2, pos.y - 1)))
 		if (m_Pieces[index1] == nullptr || !SameColor(index1, index))
-			m_SelectionSquares.push_back(index1);
+			list->push_back(index1);
 
 	index1 = (pos.x - 1) * 8 + pos.y - 2;
 	if (ValidPosition(sf::Vector2i(pos.x - 1, pos.y - 2)))
 		if (m_Pieces[index1] == nullptr || !SameColor(index1, index))
-			m_SelectionSquares.push_back(index1);
+			list->push_back(index1);
 
 	index1 = (pos.x + 2) * 8 + pos.y + 1;
 	if (ValidPosition(sf::Vector2i(pos.x + 2, pos.y + 1)))
 		if (m_Pieces[index1] == nullptr || !SameColor(index1, index))
-			m_SelectionSquares.push_back(index1);
+			list->push_back(index1);
 
 	index1 = (pos.x + 1) * 8 + pos.y + 2;
 	if (ValidPosition(sf::Vector2i(pos.x + 1, pos.y + 2)))
 		if (m_Pieces[index1] == nullptr || !SameColor(index1, index))
-			m_SelectionSquares.push_back(index1);
+			list->push_back(index1);
 
 	index1 = (pos.x + 2) * 8 + pos.y - 1;
 	if (ValidPosition(sf::Vector2i(pos.x + 2, pos.y - 1)))
 		if (m_Pieces[index1] == nullptr || !SameColor(index1, index))
-			m_SelectionSquares.push_back(index1);
+			list->push_back(index1);
 
 	index1 = (pos.x + 1) * 8 + pos.y - 2;
 	if (ValidPosition(sf::Vector2i(pos.x + 1, pos.y - 2)))
 		if (m_Pieces[index1] == nullptr || !SameColor(index1, index))
-			m_SelectionSquares.push_back(index1);
+			list->push_back(index1);
 }
 
-void Board::PossibleMovesKing(bool isWhite, int index2)
+void Board::PossibleMovesKing(bool isWhite, int index2, std::list<int32_t> *list)
 {
+	if (list == nullptr)
+		list = &m_SelectionSquares;
+
 	auto GetIndex = [](sf::Vector2i v)
 	{ return v.x * 8 + v.y; };
 	sf::Vector2i pos = m_Pieces[index2]->GetPosition();
@@ -583,54 +603,80 @@ void Board::PossibleMovesKing(bool isWhite, int index2)
 	{
 		int index = GetIndex(sf::Vector2i(pos.x - 1, pos.y - 1));
 		if (m_Pieces[index] == nullptr || !SameColor(index, index2))
-			m_SelectionSquares.push_back(index);
+		{
+			if (GoodMoveForKing(isWhite, index))
+			{
+				list->push_back(index);
+			}
+		}
 	}
 
 	if (ValidPosition(sf::Vector2i(pos.x + 1, pos.y + 1)))
 	{
 		int index = GetIndex(sf::Vector2i(pos.x + 1, pos.y + 1));
 		if (m_Pieces[index] == nullptr || !SameColor(index, index2))
-			m_SelectionSquares.push_back(index);
+			if (GoodMoveForKing(isWhite, index))
+			{
+				list->push_back(index);
+			}
 	}
 
 	if (ValidPosition(sf::Vector2i(pos.x - 1, pos.y + 1)))
 	{
 		int index = GetIndex(sf::Vector2i(pos.x - 1, pos.y + 1));
 		if (m_Pieces[index] == nullptr || !SameColor(index, index2))
-			m_SelectionSquares.push_back(index);
+			if (GoodMoveForKing(isWhite, index))
+			{
+				list->push_back(index);
+			}
 	}
 
 	if (ValidPosition(sf::Vector2i(pos.x + 1, pos.y - 1)))
 	{
 		int index = GetIndex(sf::Vector2i(pos.x + 1, pos.y - 1));
 		if (m_Pieces[index] == nullptr || !SameColor(index, index2))
-			m_SelectionSquares.push_back(index);
+			if (GoodMoveForKing(isWhite, index))
+			{
+				list->push_back(index);
+			}
 	}
 
 	if (ValidPosition(sf::Vector2i(pos.x + 1, pos.y)))
 	{
 		int index = GetIndex(sf::Vector2i(pos.x + 1, pos.y));
 		if (m_Pieces[index] == nullptr || !SameColor(index, index2))
-			m_SelectionSquares.push_back(index);
+			if (GoodMoveForKing(isWhite, index))
+			{
+				list->push_back(index);
+			}
 	}
 	if (ValidPosition(sf::Vector2i(pos.x - 1, pos.y)))
 	{
 		int index = GetIndex(sf::Vector2i(pos.x - 1, pos.y));
 		if (m_Pieces[index] == nullptr || !SameColor(index, index2))
-			m_SelectionSquares.push_back(index);
+			if (GoodMoveForKing(isWhite, index))
+			{
+				list->push_back(index);
+			}
 	}
 
 	if (ValidPosition(sf::Vector2i(pos.x, pos.y + 1)))
 	{
 		int index = GetIndex(sf::Vector2i(pos.x, pos.y + 1));
 		if (m_Pieces[index] == nullptr || !SameColor(index, index2))
-			m_SelectionSquares.push_back(index);
+			if (GoodMoveForKing(isWhite, index))
+			{
+				list->push_back(index);
+			}
 	}
 	if (ValidPosition(sf::Vector2i(pos.x, pos.y - 1)))
 	{
 		int index = GetIndex(sf::Vector2i(pos.x, pos.y - 1));
 		if (m_Pieces[index] == nullptr || !SameColor(index, index2))
-			m_SelectionSquares.push_back(index);
+			if (GoodMoveForKing(isWhite, index))
+			{
+				list->push_back(index);
+			}
 	}
 	AddCastlingMoves(isWhite, index2);
 }
@@ -659,8 +705,11 @@ bool Board::SameColor(int index1, int index2)
 	}
 }
 
-void Board::AddCastlingMoves(bool isWhite, int index)
+void Board::AddCastlingMoves(bool isWhite, int index, std::list<int32_t> *list)
 {
+	if (list == nullptr)
+		list = &m_SelectionSquares;
+
 	Piece *king = m_Pieces[index];
 	sf::Vector2i pos = king->GetPosition();
 	if (isWhite)
@@ -670,25 +719,26 @@ void Board::AddCastlingMoves(bool isWhite, int index)
 		// Standard Position of Rook
 		sf::Vector2i leftRookPos = sf::Vector2i(7, 0);
 		sf::Vector2i rightRookPos = sf::Vector2i(7, 0);
+
 		Piece *leftRook = m_Pieces[leftRookPos.x * 8 + leftRookPos.y];
 		Piece *rightRook = m_Pieces[rightRookPos.x * 8 + rightRookPos.y];
 		if (king->firstMove)
 		{
 			// Queen Side:
-			if (leftRook && CanCasle(isWhite, index, true))
+			if (leftRook && CanCasle(isWhite, true))
 			{
 				if (leftRook->firstMove)
 				{
 					int index2 = m_WhiteCastleQueenMove.first.x * 8 + m_WhiteCastleQueenMove.first.y;
-					m_SelectionSquares.push_back(index2);
+					list->push_back(index2);
 				}
 			}
-			if (rightRook && CanCasle(isWhite, index, false))
+			if (rightRook && CanCasle(isWhite, false))
 			{
 				if (rightRook->firstMove)
 				{
 					int index2 = m_WhiteCastleKingMove.first.x * 8 + m_WhiteCastleKingMove.first.y;
-					m_SelectionSquares.push_back(index2);
+					list->push_back(index2);
 				}
 			}
 		}
@@ -704,27 +754,27 @@ void Board::AddCastlingMoves(bool isWhite, int index)
 		if (king->firstMove)
 		{
 			// Queen Side:
-			if (leftRook && CanCasle(isWhite, index, true))
+			if (leftRook && CanCasle(isWhite, true))
 			{
 				if (leftRook->firstMove)
 				{
 					int index2 = m_BlackCastleQueenMove.first.x * 8 + m_BlackCastleQueenMove.first.y;
-					m_SelectionSquares.push_back(index2);
+					list->push_back(index2);
 				}
 			}
-			if (rightRook && CanCasle(isWhite, index, false))
+			if (rightRook && CanCasle(isWhite, false))
 			{
 				if (rightRook->firstMove)
 				{
 					int index2 = m_BlackCastleKingMove.first.x * 8 + m_WhiteCastleKingMove.first.y;
-					m_SelectionSquares.push_back(index2);
+					list->push_back(index2);
 				}
 			}
 		}
 	}
 }
 
-bool Board::CanCasle(bool isWhite, int index, bool queenSide)
+bool Board::CanCasle(bool isWhite, bool queenSide)
 {
 	if (isWhite)
 	{
@@ -737,7 +787,7 @@ bool Board::CanCasle(bool isWhite, int index, bool queenSide)
 			bool pieceExists = false;
 			for (int i = 0; i < 3; i++)
 			{
-				if (m_Pieces[arr[i]])
+				if (m_Pieces[arr[i]] || !GoodMoveForKing(isWhite, arr[i]))
 				{
 					pieceExists = true;
 					break;
@@ -751,7 +801,7 @@ bool Board::CanCasle(bool isWhite, int index, bool queenSide)
 								   7 * 8 + 5};
 			bool pieceExists = false;
 			for (int i = 0; i < 2; i++)
-				if (m_Pieces[arr[i]])
+				if (m_Pieces[arr[i]] || !GoodMoveForKing(isWhite, arr[i]))
 				{
 					pieceExists = true;
 					break;
@@ -770,7 +820,7 @@ bool Board::CanCasle(bool isWhite, int index, bool queenSide)
 			bool pieceExists = false;
 			for (int i = 0; i < 3; i++)
 			{
-				if (m_Pieces[arr[i]])
+				if (m_Pieces[arr[i]] || !GoodMoveForKing(isWhite, arr[i]))
 				{
 					pieceExists = true;
 					break;
@@ -784,7 +834,7 @@ bool Board::CanCasle(bool isWhite, int index, bool queenSide)
 								   0 * 8 + 5};
 			bool pieceExists = false;
 			for (int i = 0; i < 2; i++)
-				if (m_Pieces[arr[i]])
+				if (m_Pieces[arr[i]] || !GoodMoveForKing(isWhite, arr[i]))
 				{
 					pieceExists = true;
 					break;
@@ -803,13 +853,13 @@ void Board::UpdateKingsCheck()
 		Piece *currentPiece = m_AlivePieces[i];
 		if (currentPiece->type & PieceType::White)
 		{
-			bool f = CanPieceAttack(m_BlackKing, currentPiece);
+			bool f = CanPieceAttack(m_BlackKing->GetIndex(), currentPiece);
 			if (f)
 				blackCheckers++;
 		}
 		else
 		{
-			bool f = CanPieceAttack(m_WhiteKing, currentPiece);
+			bool f = CanPieceAttack(m_WhiteKing->GetIndex(), currentPiece);
 			if (f)
 				whiteCheckers++;
 		}
@@ -824,68 +874,69 @@ void Board::UpdateKingsCheck()
 		m_WhiteInCheck = false;
 }
 
-bool Board::CanPieceAttack(Piece *king, Piece *currentPiece)
+bool Board::CanPieceAttack(int32_t kingIndex, Piece *currentPiece, std::list<int32_t> *list)
 {
 	//We are sure that both the king and the piece are not from the same color
+	if (list == nullptr)
+		list = &m_SelectionSquares;
 	int type = currentPiece->type;
 	int index = currentPiece->GetIndex();
-	int kingIndex = king->GetIndex();
 	bool isWhite = currentPiece->type & PieceType::White;
 	bool flag = false;
 	if (type & PieceType::Bishop)
 	{
-		PossibleMovesBishop(isWhite, index);
-		for (auto &square : m_SelectionSquares)
+		PossibleMovesBishop(isWhite, index, list);
+		for (auto &square : *list)
 			if (square == kingIndex)
 			{
 				flag = true;
 				break;
 			}
-		m_SelectionSquares.clear();
+		list->clear();
 	}
 	else if (type & PieceType::Rook)
 	{
-		PossibleMovesRook(isWhite, index);
-		for (auto &square : m_SelectionSquares)
+		PossibleMovesRook(isWhite, index, list);
+		for (auto &square : *list)
 			if (square == kingIndex)
 			{
 				flag = true;
 				break;
 			}
-		m_SelectionSquares.clear();
+		list->clear();
 	}
 	else if (type & PieceType::Knight)
 	{
-		PossibleMovesKnight(isWhite, index);
-		for (auto &square : m_SelectionSquares)
+		PossibleMovesKnight(isWhite, index, list);
+		for (auto &square : *list)
 			if (square == kingIndex)
 			{
 				flag = true;
 				break;
 			}
-		m_SelectionSquares.clear();
+		list->clear();
 	}
 	else if (type & PieceType::Queen)
 	{
-		PossibleMovesQueen(isWhite, index);
-		for (auto &square : m_SelectionSquares)
+		PossibleMovesQueen(isWhite, index, list);
+		for (auto &square : *list)
 			if (square == kingIndex)
 			{
 				flag = true;
 				break;
 			}
-		m_SelectionSquares.clear();
+		list->clear();
 	}
 	else if (type & PieceType::Pawn)
 	{
-		PossibleMovesPawn(isWhite, index, true);
-		for (auto &square : m_SelectionSquares)
+		PossibleMovesPawn(isWhite, index, true, list);
+		for (auto &square : *list)
 			if (square == kingIndex)
 			{
 				flag = true;
 				break;
 			}
-		m_SelectionSquares.clear();
+		list->clear();
 	}
 	return flag;
 }
@@ -964,8 +1015,80 @@ void Board::MoveNormally()
 bool Board::IsCastlingMove(bool isWhite)
 {
 	bool castlingMove = (!isWhite && (m_BlackCasleQueen && (m_NewPosition.x == m_BlackCastleQueenMove.first.x && m_NewPosition.y == m_BlackCastleQueenMove.first.y)) ||
-						 (m_BlackCasleKing && (m_NewPosition.x == m_BlackCastleKingMove.first.x && m_NewPosition.y == m_BlackCastleKingMove.first.y)));
+						 (m_BlackCasleKing && (m_NewPosition.x == m_BlackCastleKingMove.first.x && m_NewPosition.y == m_BlackCastleKingMove.first.y))) &&
+						m_BlackKing->firstMove;
 	castlingMove = castlingMove || (isWhite && (m_WhiteCasleQueen && (m_NewPosition.x == m_WhiteCastleQueenMove.first.x && m_NewPosition.y == m_WhiteCastleQueenMove.first.y) ||
-												(m_WhiteCasleKing && (m_NewPosition.x == m_WhiteCastleKingMove.first.x && m_NewPosition.y == m_WhiteCastleKingMove.first.y))));
+												(m_WhiteCasleKing && (m_NewPosition.x == m_WhiteCastleKingMove.first.x && m_NewPosition.y == m_WhiteCastleKingMove.first.y)))) &&
+									   m_WhiteKing->firstMove;
 	return castlingMove;
+}
+
+bool Board::IsOneOfEight(sf::Vector2i &pos, int index)
+{
+	std::vector<int32_t> indices;
+	indices.reserve(8);
+	sf::Vector2i positions[] = {
+		{pos.x - 1, pos.y - 1},
+		{pos.x + 1, pos.y + 1},
+		{pos.x - 1, pos.y + 1},
+		{pos.x + 1, pos.y - 1},
+		{pos.x - 1, pos.y},
+		{pos.x, pos.y - 1},
+		{pos.x, pos.y + 1},
+		{pos.x + 1, pos.y},
+	};
+	for (int i = 0; i < 8; i++)
+		if (ValidPosition(positions[i]))
+			indices.push_back(positions[i].x * 8 + positions[i].y);
+
+	for (auto &i : indices)
+		if (i == index)
+			return true;
+
+	return false;
+}
+bool Board::GoodMoveForKing(bool isKingWhite, int32_t newIndex)
+{
+	bool flag = false;
+	std::list<int32_t> checkList;
+	for (int i = 0; i < m_AlivePieces.size(); i++)
+	{
+		Piece *&piece = m_AlivePieces[i];
+		if (isKingWhite)
+		{
+			if (!(piece->type & PieceType::White))
+			{
+				if (piece->type & PieceType::King)
+				{
+					sf::Vector2i blackKingPos = m_BlackKing->GetPosition();
+					flag = IsOneOfEight(blackKingPos, newIndex);
+				}
+				else
+				{
+					flag = CanPieceAttack(newIndex, piece, &checkList);
+				}
+
+				checkList.clear();
+			}
+		}
+		else
+		{
+			if (piece->type & PieceType::White)
+			{
+				if (piece->type & PieceType::King)
+				{
+					sf::Vector2i whiteKingPos = m_WhiteKing->GetPosition();
+					flag = IsOneOfEight(whiteKingPos, newIndex);
+				}
+				else
+				{
+					flag = CanPieceAttack(newIndex, piece, &checkList);
+				}
+				checkList.clear();
+			}
+		}
+		if (flag == true)
+			break;
+	}
+	return !flag;
 }

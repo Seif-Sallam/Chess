@@ -34,18 +34,21 @@ private:
 	void GetPossibleMoves(Piece *piece);
 	bool ValidPosition(const sf::Vector2i &position);
 
-	void PossibleMovesRook(bool isWhite, int index);
-	void PossibleMovesPawn(bool isWhite, int index, bool capturesOnly = false);
-	void PossibleMovesBishop(bool isWhite, int index);
-	void PossibleMovesQueen(bool isWhite, int index);
-	void PossibleMovesKnight(bool isWhite, int index);
-	void PossibleMovesKing(bool isWhite, int index);
-	void AddCastlingMoves(bool isWhite, int index);
+	void PossibleMovesRook(bool isWhite, int index, std::list<int32_t> *list = nullptr);
+	void PossibleMovesPawn(bool isWhite, int index, bool capturesOnly = false, std::list<int32_t> *list = nullptr);
+	void PossibleMovesBishop(bool isWhite, int index, std::list<int32_t> *list = nullptr);
+	void PossibleMovesQueen(bool isWhite, int index, std::list<int32_t> *list = nullptr);
+	void PossibleMovesKnight(bool isWhite, int index, std::list<int32_t> *list = nullptr);
+	void PossibleMovesKing(bool isWhite, int index, std::list<int32_t> *list = nullptr);
+	void AddCastlingMoves(bool isWhite, int index, std::list<int32_t> *list = nullptr);
 
 	void UpdateKingsCheck();
-	bool CanPieceAttack(Piece *king, Piece *currentPiece);
-	bool CanCasle(bool isWhite, int index, bool queenSide);
+	bool CanPieceAttack(int32_t kingIndex, Piece *currentPiece, std::list<int32_t> *list = nullptr);
+	bool CanCasle(bool isWhite, bool queenSide);
 	bool SameColor(int index1, int index2);
+
+	bool IsOneOfEight(sf::Vector2i &pos, int index);
+	bool GoodMoveForKing(bool isWhite, int32_t newIndex);
 
 	static sf::Vector2f m_TileSize;
 	Piece *m_Pieces[64];
