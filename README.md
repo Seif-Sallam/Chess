@@ -12,5 +12,5 @@ A chess game using SFML.
 * When the king in check you can still move any piece other than the king ignoring the check.
 
 
-## NOTE
+## NOTE TO SELF
 En passant can be done by saving the en passant available positions and make sure that we are a pawn and then see if we can capture one that is one of the en passant moves.
